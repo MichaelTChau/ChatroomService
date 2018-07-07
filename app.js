@@ -138,17 +138,28 @@ function makeRoom(chatroomName,roomTaken,response){
   });
 }
 
-app.post("/getRoomData",function(request, response){
+app.post("/connectToRoom",function(request, response){
     var chatroomName = request.body.chatroomName;
     var roomExist = { chatroomName : chatroomName};
     db.collection("chatrooms").find(roomExist).project({_id:0}).toArray(function(err, res) {
       console.log(res);
       if (err) throw err;
-      if(res.length !==0){
-
+      if(res.length !== 0){
+        var obj =  { status : { type: type, message:message,code:code,error:error},
+        data:{ messages: res.messages}} ;
+        response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
+        response.write(JSON.stringify(obj));
+        response.end();
+      }
+      else{
+        var obj =  { status : { type: "Bad request", message:"Error the room  doesn't exist",code:201,error:true} };
+        response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
+        response.write(JSON.stringify(obj));
+        response.end();
       }
     });
 });
+
 
 //Socket setup
 var io = socket(server);
