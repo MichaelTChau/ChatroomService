@@ -145,6 +145,11 @@ app.post("/connectToRoom",function(request, response){
       console.log(res);
       if (err) throw err;
       if(res.length !== 0){
+        var content , error, sessionToken, type, message, code;
+        error = false;
+        type = "Success";
+        message ="Chatroom connected success!";
+        code =  200;
         var obj =  { status : { type: type, message:message,code:code,error:error},
         data:{ messages: res.messages}} ;
         response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
