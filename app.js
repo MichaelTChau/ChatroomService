@@ -26,7 +26,7 @@ var server = app.listen(4000,function(){
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-
+app.use(bodyParser.json());
 app.use(cors());
 
 app.post('/signup', function(req, response) {
@@ -50,6 +50,7 @@ function makeAccount(newProfile,usernameTaken,response){
     var obj =  { status : { type: "Bad request", message:"Error username is taken",code:201,error:true} };
     response.writeHead(200, {"Content-Type": "application/json"});
     response.write(JSON.stringify(obj));
+    response.end();
     console.log("taken");
     return;
   }
@@ -59,6 +60,7 @@ function makeAccount(newProfile,usernameTaken,response){
     var obj = { status : { type: "Success", message:"Signup success",code:200,error:false} };;
     response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
     response.write(JSON.stringify(obj));
+    response.end();
     console.log("success!");
   });
 }
@@ -81,6 +83,7 @@ app.post('/login', function(req, response) {
       data:{ user: username,status:type, sessionToken: sessionToken}} :  { status : { type: type, message:message,code:code,error:error}};
       response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
       response.write(JSON.stringify(obj));
+      response.end();
     });
 
 });
@@ -98,6 +101,7 @@ app.get("/chatrooms",function(request, response){
     data:{ chatrooms: res}} ;
     response.writeHead(200, {"Content-Type":"application/json; charset=utf-8"});
     response.write(JSON.stringify(obj));
+    response.end();
     console.log("sending");
   });
 });
@@ -119,6 +123,7 @@ function makeRoom(chatroomName,roomTaken,response){
     var obj =  { status : { type: "Bad request", message:"Error the room exist already",code:201,error:true} };
     response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
     response.write(JSON.stringify(obj));
+    response.end();
     return;
   }
   var date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
@@ -128,6 +133,7 @@ function makeRoom(chatroomName,roomTaken,response){
     var obj = { status : { type: "Success", message:"Room creation is a success",code:200,error:false} };;
     response.writeHead(200, {"Content-Type":"application/json; charset=utf-8"});
     response.write(JSON.stringify(obj));
+    response.end();
     console.log("success!");
   });
 }
