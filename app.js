@@ -1,6 +1,7 @@
 var express = require('express');
 var socket = require('socket.io');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
+var cors = require('cors');
 const Mongodb = require('mongodb');
 
 var app = express();
@@ -25,6 +26,8 @@ var server = app.listen(4000,function(){
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+
+app.use(cors());
 
 app.post('/signup', function(req, response) {
     var username = req.body.username;
@@ -54,7 +57,7 @@ function makeAccount(newProfile,usernameTaken,response){
     console.log("here");
     if (err) throw err;
     var obj = { status : { type: "Success", message:"Signup success",code:200,error:false} };;
-    response.writeHead(200, {"Content-Type": "application/json"});
+    response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
     response.write(JSON.stringify(obj));
     console.log("success!");
   });
@@ -76,7 +79,7 @@ app.post('/login', function(req, response) {
       sessionToken = (res.length == 1) ? "qwerty1234567890" : "";
       var obj = (res.length == 1) ? { status : { type: type, message:message,code:code,error:error},
       data:{ user: username,status:type, sessionToken: sessionToken}} :  { status : { type: type, message:message,code:code,error:error}};
-      response.writeHead(200, {"Content-Type": "application/json"});
+      response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
       response.write(JSON.stringify(obj));
     });
 
@@ -93,8 +96,9 @@ app.get("/chatrooms",function(request, response){
     code =  200;
     var obj =  { status : { type: type, message:message,code:code,error:error},
     data:{ chatrooms: res}} ;
-    response.writeHead(200, {"Content-Type": "application/json"});
+    response.writeHead(200, {"Content-Type":"application/json; charset=utf-8"});
     response.write(JSON.stringify(obj));
+    console.log("sending");
   });
 });
 
@@ -113,7 +117,7 @@ app.post("/createChatroom",function(request, response){
 function makeRoom(chatroomName,roomTaken,response){
   if(roomTaken){
     var obj =  { status : { type: "Bad request", message:"Error the room exist already",code:201,error:true} };
-    response.writeHead(200, {"Content-Type": "application/json"});
+    response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
     response.write(JSON.stringify(obj));
     return;
   }
@@ -122,7 +126,7 @@ function makeRoom(chatroomName,roomTaken,response){
   db.collection("chatrooms").insertOne(newRoom, function(err, res) {
     if (err) throw err;
     var obj = { status : { type: "Success", message:"Room creation is a success",code:200,error:false} };;
-    response.writeHead(200, {"Content-Type": "application/json"});
+    response.writeHead(200, {"Content-Type":"application/json; charset=utf-8"});
     response.write(JSON.stringify(obj));
     console.log("success!");
   });
@@ -139,7 +143,6 @@ app.post("/getRoomData",function(request, response){
       }
     });
 });
-
 
 //Socket setup
 var io = socket(server);
