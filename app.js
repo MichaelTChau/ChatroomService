@@ -4,9 +4,11 @@ var bodyParser = require('body-parser');
 var cors = require('cors');
 const Mongodb = require('mongodb');
 
-var app = express();
 const MONGODB_URI = 'mongodb://Admin:password123@ds117101.mlab.com:17101/chatroomservice';
 var db;
+var currentRoom = "";
+
+var app = express();
 
 Mongodb.MongoClient.connect(MONGODB_URI, function (err, database) {
   if (err) {
@@ -14,7 +16,6 @@ Mongodb.MongoClient.connect(MONGODB_URI, function (err, database) {
     process.exit(1);
   }
 
-  // Save database object from the callback for reuse.
   db = database.db('chatroomservice');
   console.log("Database connection ready");
 });
@@ -138,8 +139,8 @@ function makeRoom(chatroomName,roomTaken,response){
   });
 }
 
-app.post("/connectToRoom",function(request, response){
-    var chatroomName = request.body.chatroomName;
+app.get("/connectToRoom",function(request, response){
+    var chatroomName = request.query.chatroomName;
     var roomExist = { chatroomName : chatroomName};
     db.collection("chatrooms").find(roomExist).project({_id:0}).toArray(function(err, res) {
       console.log(res);
@@ -150,11 +151,14 @@ app.post("/connectToRoom",function(request, response){
         type = "Success";
         message ="Chatroom connected success!";
         code =  200;
+        var parsedObj = res[0].messages;
+        console.log(parsedObj);
         var obj =  { status : { type: type, message:message,code:code,error:error},
-        data:{ messages: res.messages}} ;
+        data:{ messages: res[0].messages}} ;
         response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
         response.write(JSON.stringify(obj));
         response.end();
+        currentRoom = chatroomName;
       }
       else{
         var obj =  { status : { type: "Bad request", message:"Error the room  doesn't exist",code:201,error:true} };
@@ -165,18 +169,32 @@ app.post("/connectToRoom",function(request, response){
     });
 });
 
-
 //Socket setup
 var io = socket(server);
 io.on('connection', (socket) => {
   console.log("made socket connection",socket.id);
+  socket.on('joinRoom', function(room) {
+    console.log('joining room', room);
+    if(currentRoom === room){
+      socket.join(room);
+    }
+  })
 
-  socket.on('chat',function(data){
-    io.emit('chat',data);
-    console.log('sending');
+  socket.on('leaveRoom', function(room) {
+    console.log('leaving room', room);
+    socket.leave(room);
+  })
+
+  socket.on('send', function(data) {
+    console.log('sending message');
+    if(currentRoom ===data.room){
+      io.sockets.in(data.room).emit('message', data);
+      var room = {chatroomName:data.room};
+      var date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+      db.collection("chatrooms").update(room,{ $push: { messages: {type:"text",dateSent:date,content:data.data.message,username:data.data.username} } }, function(err, res) {
+        if (err) throw err;
+        console.log("pushed");
+      });
+    }
   });
-
-  socket.on('typing', function(data){
-        socket.broadcast.emit('typing', data);
-    });
 });
