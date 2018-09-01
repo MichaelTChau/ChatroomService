@@ -143,10 +143,8 @@ app.get("/connectToRoom",function(request, response){
     var chatroomName = request.query.chatroomName;
     var roomExist = { chatroomName : chatroomName};
     console.log(roomExist);
-    console.log(request.query);
     console.log('hello');
-    console.log(request.params);
-    console.log(request.body);
+    console.log(request.headers);
     db.collection("chatrooms").find(roomExist).project({_id:0}).toArray(function(err, res) {
       console.log(res);
       if (err) throw err;
