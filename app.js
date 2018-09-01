@@ -140,11 +140,11 @@ function makeRoom(chatroomName,roomTaken,response){
 }
 
 app.get("/connectToRoom",function(request, response){
-    var chatroomName = request.query.chatroomName;
+    var chatroomName = request.headers.chatroomName;
     var roomExist = { chatroomName : chatroomName};
     console.log(roomExist);
     console.log('hello');
-    console.log(request.headers);
+    console.log(request.headers.chatroomName);
     db.collection("chatrooms").find(roomExist).project({_id:0}).toArray(function(err, res) {
       console.log(res);
       if (err) throw err;
