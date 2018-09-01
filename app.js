@@ -145,7 +145,7 @@ app.get("/connectToRoom",function(request, response){
     console.log(roomExist);
     console.log(request.query);
     console.log('hello');
-    console.log(request.param);
+    console.log(request.param('chatroomName'));
     db.collection("chatrooms").find(roomExist).project({_id:0}).toArray(function(err, res) {
       console.log(res);
       if (err) throw err;
