@@ -188,6 +188,10 @@ io.on('connection', (socket) => {
     socket.leave(room);
   })
 
+  socket.on('stream',function(data) {
+    io.sockets.in(data.room).broadcast.emit('streamB',data.image);
+  })
+
   socket.on('send', function(data) {
     console.log('sending message');
     if(currentRoom ===data.room){
